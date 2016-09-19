@@ -714,11 +714,16 @@ void * thread_buffer_t::thread_func( void * param )
                 select_timeout.tv_sec=0;
                 select_timeout.tv_usec=100000;
                 int nfds=std::max( p->m_in_pipe.w(), std::max( p->m_out_pipe.r(), p->m_err_pipe.r() ) )+1;
-                if( select( nfds, &read_fds, &write_fds, 0, &select_timeout )==-1 ) {
+                bool dobreak = false;
+                //Modified JPT 2014-08-07 (see exec-stream-inpl.cpp exec_stream_t::impl_t::start for details)
+                while( select( nfds, &read_fds, &write_fds, 0, &select_timeout )==-1 ) {
+                    if (errno == EINTR) continue;
                     p->m_error_code=errno;
                     p->m_error_prefix="thread_buffer_t::thread_func: select failed";
+                    dobreak = true;
                     break;
                 }
+                if (dobreak) break;
             }
             
             // determine what we got

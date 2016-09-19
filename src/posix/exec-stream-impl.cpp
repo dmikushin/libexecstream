@@ -259,7 +259,18 @@ void exec_stream_t::impl_t::start( std::string const & program )
         struct timeval timeout;
         timeout.tv_sec=3;
         timeout.tv_usec=0;
-        if( select( status_pipe.r()+1, &status_fds, 0, 0, &timeout )==-1 ) {
+        /* Modified JPT 2014-08-07 - converted the if statement to a while loop to handle EINTR.
+         * From the best that I can tell, select() == -1 w/errno == EINTR does not actually represent
+         * an error condition, but only that there was a long wait that got interrupted. The select call
+         * is just waiting until the status descriptor has something to read, at which point it will return +1.
+         * Restarting the status descriptor with the same time delay will extend the possible timeout (or, possibly,
+         * on some systems, continue with the same time as previously requested).
+         *
+         * This error was only manifested when many processes were started nearly simultaneously, and is
+         * likely due to thread/process contention.
+         */
+        while ( select( status_pipe.r()+1, &status_fds, 0, 0, &timeout )==-1 ) {
+            if (errno == EINTR); continue;
             throw os_error_t( "exec_stream_t::start: select on status_pipe failed" );
         }
         if( !FD_ISSET( status_pipe.r(), &status_fds ) ) {
@@ -336,7 +347,8 @@ bool exec_stream_t::close()
             struct timeval select_timeout;
             select_timeout.tv_sec=m_impl->m_child_timeout/1000;
             select_timeout.tv_usec=(m_impl->m_child_timeout%1000)*1000;
-            if( (code=select( 0, 0, 0, 0, &select_timeout ))==-1 ) {
+            while( (code=select( 0, 0, 0, 0, &select_timeout ))==-1 ) {
+                if (errno == EINTR) continue;
                 throw os_error_t( "exec_stream_t::close: select failed" );
             }
 
@@ -360,12 +372,27 @@ bool exec_stream_t::close()
 
 void exec_stream_t::kill()
 {
-    if( m_impl->m_child_pid!=-1 ) {
-        if( ::kill( m_impl->m_child_pid, SIGKILL )==-1 ) {
+    if( m_impl->m_child_pid!=-1 )
+    {
+        if( ::kill( m_impl->m_child_pid, SIGKILL )==-1 )
+        {
             throw os_error_t( "exec_stream_t::kill: kill failed" );
         }
-        m_impl->m_child_pid=-1;
-        m_impl->m_exit_code=0;
+        // Updated via Sourceforge sansay0 comment as of 2010-08-20
+        // The correct way to handle killing a child process is to wait for the OS
+        // to release the child process resources before assigning -1 to m_child_pid.
+        // Assigning -1 to m_child_pid without waiting will result in a "defunct" process
+        // (aka zombie process) remaining in the process table.
+        pid_t code=waitpid( m_impl->m_child_pid, &m_impl->m_exit_code, 0 );
+        if( code == m_impl->m_child_pid )
+        {
+            m_impl->m_child_pid=-1;
+            m_impl->m_exit_code=0;
+        }
+        else if( code == -1 )
+        {
+            throw os_error_t( "exec_stream_t::kill: waitpid failed" );
+        }
     }
 }
 
