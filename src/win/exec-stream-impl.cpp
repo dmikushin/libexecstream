@@ -125,7 +125,7 @@ void exec_stream_t::set_text_mode( int stream_kind )
     }
 }
 
-void exec_stream_t::start( std::string const & program, std::string const & arguments )
+void exec_stream_t::start( std::string const & program, std::string const & arguments, char * envp[] )
 {
     if( !close() ) {
         throw exec_stream_t::error_t( "exec_stream_t::start: previous child process has not yet terminated" );
@@ -163,14 +163,31 @@ void exec_stream_t::start( std::string const & program, std::string const & argu
         command+=' ';
         command+=arguments;
     }
+    LPVOID env = NULL;
+    if( envp != NULL && envp[0] != NULL ) {
+        size_t sz = 1;
+        char* e = *envp;
+        while(e) sz += strlen(e) + 1;
+        char* buff = new char[sz];
+        ZeroMemory( buff, sz );
+        env = (LPVOID)buff;
+        e = *envp;
+        while(e) {
+            size_t len = strlen(e) + 1;
+            memcpy(buff, e, len);
+            buff += len;
+        }
+    }
     STARTUPINFOA si;
     ZeroMemory( &si, sizeof( si ) );
     si.cb=sizeof( si );
     PROCESS_INFORMATION pi;
     ZeroMemory( &pi, sizeof( pi ) );
-    if( !CreateProcessA( 0, const_cast< char * >( command.c_str() ), 0, 0, TRUE, 0, 0, 0, &si, &pi ) ) {
+    if( !CreateProcessA( 0, const_cast< char * >( command.c_str() ), 0, 0, TRUE, 0, env, 0, &si, &pi ) ) {
         throw os_error_t( "exec_stream_t::start: CreateProcess failed.\n command line was: "+command );
     }
+
+    if(env) delete[] (char*)env;
 
     m_impl->m_child_process=pi.hProcess;
     
@@ -191,7 +208,7 @@ void exec_stream_t::start( std::string const & program, std::string const & argu
     m_impl->m_in_thread.start_writer_thread( m_impl->m_in_pipe );
 }
 
-void exec_stream_t::start( std::string const & program, exec_stream_t::next_arg_t & next_arg )
+void exec_stream_t::start( std::string const & program, exec_stream_t::next_arg_t & next_arg, char * envp[] )
 {
     std::string arguments;
     while( std::string const * arg=next_arg.next() ) {
@@ -215,7 +232,7 @@ void exec_stream_t::start( std::string const & program, exec_stream_t::next_arg_
             arguments+=" "+*arg;
         }
     }
-    start( program, arguments );
+    start( program, arguments, envp );
 }
 
 bool exec_stream_t::close_in()
