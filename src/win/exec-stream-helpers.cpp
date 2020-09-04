@@ -523,7 +523,7 @@ DWORD WINAPI thread_buffer_t::reader_thread( LPVOID param )
                 // they want more data - read the file
                 DWORD read_size=0;
                 DWORD read_status=ERROR_SUCCESS;
-                if( !ReadFile( p->m_pipe, read_buffer, p->m_read_buffer_size, &read_size, 0 ) ) {
+                if( !ReadFile( p->m_pipe, read_buffer, static_cast<DWORD>( p->m_read_buffer_size ), &read_size, 0 ) ) {
                     read_status=GetLastError();
                     if( read_status!=ERROR_BROKEN_PIPE ) {
                         p->note_thread_error( "thread_buffer_t::reader_thread: ReadFile failed", read_status, "" );
@@ -681,7 +681,7 @@ DWORD WINAPI thread_buffer_t::writer_thread( LPVOID param )
             if( buffer.data!=0 ) {
                 // we have buffer - write it
                 DWORD written_size;
-                if( !WriteFile( p->m_pipe, buffer.data+buffer_offset, buffer.size-buffer_offset, &written_size, 0 ) ) {
+                if( !WriteFile( p->m_pipe, buffer.data+buffer_offset, static_cast<DWORD>( buffer.size-buffer_offset ), &written_size, 0 ) ) {
                     p->note_thread_error( "thread_buffer_t::writer_thread: WriteFile failed", GetLastError(), "" );
                     break;
                 }
