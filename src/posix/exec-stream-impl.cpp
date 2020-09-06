@@ -174,6 +174,11 @@ void exec_stream_t::start( std::string const & program, exec_stream_t::next_arg_
 
 void exec_stream_t::impl_t::start( std::string const & program, char * envp[] )
 {
+    int volatile *res = static_cast<int*> (mmap(NULL, sizeof(int), PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0));
+    if(res == MAP_FAILED) {
+        throw os_error_t( "exec_stream_t::start: unable to initialize shared mem region" );
+    }
+    
     m_in_pipe.open();
     m_out_pipe.open();
     m_err_pipe.open();
@@ -216,7 +221,15 @@ void exec_stream_t::impl_t::start( std::string const & program, char * envp[] )
             m_in_pipe.close_r();
             m_out_pipe.close_w();
             m_err_pipe.close_w();
-            if( execvpe( m_child_args.data(), m_child_argp.data(), envp )==-1 ) {
+            *res = 1;        // Executing the child...
+            int rc = execvpe( m_child_args.data(), m_child_argp.data(), envp );
+            *res = 0;        // Oops, child is back.
+            int e = errno;
+            if(e == ENOENT || e == EACCES)
+            {
+                throw os_error_t( "exec_stream_t::start: Executing child process failed." );
+            }
+            if( rc==-1 ) {
                 throw os_error_t( "exec_stream_t::start: exec in child process failed. "+program );
             }
             throw exec_stream_t::error_t( "exec_stream_t::start: exec in child process returned" );

@@ -838,7 +838,7 @@ void * thread_buffer_t::thread_func( void * param )
         
         delete[] write_buffer.data;
         
-    }catch( ... ) {
+    } catch( const std::bad_alloc& e ) {
         // might only be std::bad_alloc
         p->m_error_code=0;
         p->m_error_prefix="thread_buffer_t::writer_thread: exception caught";
