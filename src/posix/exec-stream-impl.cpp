@@ -33,7 +33,7 @@ struct exec_stream_t::impl_t {
     
     void split_args( std::string const & program, std::string const & arguments );
     void split_args( std::string const & program, exec_stream_t::next_arg_t & next_arg );
-    void start( std::string const & program );
+    void start( std::string const & program, char * envp[] );
     
     pid_t m_child_pid;
     int m_exit_code;
@@ -171,27 +171,27 @@ void exec_stream_t::set_wait_timeout( int stream_kind, timeout_t milliseconds )
     }
 }
 
-void exec_stream_t::start( std::string const & program, std::string const & arguments )
+void exec_stream_t::start( std::string const & program, std::string const & arguments, char * envp[] )
 {
     if( !close() ) {
         throw exec_stream_t::error_t( "exec_stream_t::start: previous child process has not yet terminated" );
     }
     
     m_impl->split_args( program, arguments );
-    m_impl->start( program );
+    m_impl->start( program, envp );
 }
 
-void exec_stream_t::start( std::string const & program, exec_stream_t::next_arg_t & next_arg )
+void exec_stream_t::start( std::string const & program, exec_stream_t::next_arg_t & next_arg, char * envp[] )
 {
     if( !close() ) {
         throw exec_stream_t::error_t( "exec_stream_t::start: previous child process has not yet terminated" );
     }
 
     m_impl->split_args( program, next_arg );
-    m_impl->start( program );
+    m_impl->start( program, envp );
 }
 
-void exec_stream_t::impl_t::start( std::string const & program )
+void exec_stream_t::impl_t::start( std::string const & program, char * envp[] )
 {
     m_in_pipe.open();
     m_out_pipe.open();
@@ -199,6 +199,8 @@ void exec_stream_t::impl_t::start( std::string const & program )
     
     pipe_t status_pipe;
     status_pipe.open();
+    
+    if( envp == NULL) envp = environ;
     
     pid_t pid=fork();
     if( pid==-1 ) {
@@ -233,7 +235,7 @@ void exec_stream_t::impl_t::start( std::string const & program )
             m_in_pipe.close_r();
             m_out_pipe.close_w();
             m_err_pipe.close_w();
-            if( execvp( m_child_args.data(), m_child_argp.data() )==-1 ) {
+            if( execvpe( m_child_args.data(), m_child_argp.data(), envp )==-1 ) {
                 throw os_error_t( "exec_stream_t::start: exec in child process failed. "+program );
             }
             throw exec_stream_t::error_t( "exec_stream_t::start: exec in child process returned" );
@@ -270,7 +272,7 @@ void exec_stream_t::impl_t::start( std::string const & program )
          * likely due to thread/process contention.
          */
         while ( select( status_pipe.r()+1, &status_fds, 0, 0, &timeout )==-1 ) {
-            if (errno == EINTR); continue;
+            if (errno == EINTR) continue;
             throw os_error_t( "exec_stream_t::start: select on status_pipe failed" );
         }
         if( !FD_ISSET( status_pipe.r(), &status_fds ) ) {
