@@ -227,6 +227,7 @@ bool check_if_english_error_messages()
 int hello()
 {
     std::cout<<"hello";
+    std::cout.flush();
     return 0;
 }
 
@@ -234,19 +235,23 @@ int helloworld()
 {
     std::cout<<"hello\n";
     std::cout<<"world";
+    std::cout.flush();
     return 0;
 }
 
 int hello_o_world_e()
 {
     std::cout<<"hello";
+    std::cout.flush();
     std::cerr<<"world";
+    std::cerr.flush();
     return 0;
 }
 
 int with_space()
 {
     std::cout<<"with space ok\n";
+    std::cout.flush();
     return 0;
 }
 
@@ -254,6 +259,7 @@ int write_after_pause()
 {
     sleep( 10 );
     std::cout<<"after pause";
+    std::cout.flush();
     return 0;
 }
 
@@ -267,6 +273,7 @@ int read_after_pause()
     }else {
         std::cerr<<"ERROR";
     }
+    std::cerr.flush();
     return 0;
 }
 
@@ -280,6 +287,7 @@ int dont_stop()
     std::string s=random_string( 100 )+"\n";
     while( true ) {
         std::cout<< s;
+        std::cout.flush();
     }
     return 0;
 }
@@ -288,6 +296,7 @@ int echo_size() {
     std::string s;
     while( std::getline( std::cin, s ).good() ) {
         std::cout<<s.size()<<std::endl;
+        std::cout.flush();
     }
     return 0;
 }
@@ -297,6 +306,7 @@ int echo()
     std::string s;
     while( std::getline( std::cin, s ).good() ) {
         std::cout<<s<<"\n";
+        std::cout.flush();
     }
     return 0;
 }
@@ -305,8 +315,10 @@ int echo_with_err()
 {
     std::string s;
     std::cerr<<random_string( 500000 );
+    std::cerr.flush();
     while( std::getline( std::cin, s ).good() ) {
         std::cout<<s<<"\n";
+        std::cout.flush();
     }
     return 0;
 }
@@ -317,9 +329,11 @@ int echo_picky()
     while( std::getline( std::cin, s ).good() ) {
         if( s=="STOP" ) {
             std::cerr<<"OK\n";
+            std::cerr.flush();
             return 0;
         }
         std::cout<<s<<"\n";
+        std::cout.flush();
     }
     return 0;
 }
@@ -331,6 +345,7 @@ int pathologic()
     for( int i=0; i<cnt; ++i ) {
         std::string t=in_s+"\n";
         fputs( t.c_str(), stdout );
+        fflush( stdout );
     }
     std::string out_s;
     int n=0;
@@ -346,6 +361,7 @@ int pathologic()
         out_s.assign( buf, len );
         if( out_s!=in_s ) {
             fputs( "ERROR", stderr );
+            fflush( stderr );
             return 0;
         }
         ++n;
@@ -355,12 +371,14 @@ int pathologic()
     }else {
         fputs( "ERROR", stderr );
     }
+    fflush( stderr );
     return 0;
 }
 
 int long_out_line()
 {
     std::cout<<random_string( 2000000 );
+    std::cout.flush( );
     return 0;
 }
 
@@ -461,7 +479,7 @@ int main( int argc, char ** argv )
 
     try {
 
-        {
+        /*{
             TEST_NAME( "hello" );
             exec_stream_t exec_stream;
             exec_stream.start( program, "child hello" );
@@ -502,7 +520,7 @@ int main( int argc, char ** argv )
             exec_stream_t exec_stream( program, "child hello-o-world-e" );
             TEST( read_all( exec_stream.err() )=="world" );
             TEST( read_all( exec_stream.out() )=="hello" );
-        }
+        }*/
 
         {
             TEST_NAME( "hello 5 times" );
@@ -535,7 +553,7 @@ int main( int argc, char ** argv )
             TEST( exec_stream.close() );
         }
 
-        {
+        /*{
             TEST_NAME( "with space" );
             std::vector< std::string > args;
             args.push_back( "child" );
@@ -934,7 +952,7 @@ int main( int argc, char ** argv )
             }catch(...) {
                 FAIL( "unexpected" );
             }
-        }
+        }*/
 
         n_failed=test_results_t::print( std::cout );
 

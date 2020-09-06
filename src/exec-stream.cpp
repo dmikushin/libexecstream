@@ -309,12 +309,12 @@ std::string int2str( unsigned long i, int base, std::size_t width )
     std::string s;
     s.reserve(4);
     while( i!=0 ) {
-        s="0123456789abcdef"[i%base]+s;
+        s.insert(s.begin(), "0123456789abcdef"[i%base]);
         i/=base;
     }
     if( width!=0 ) {
         while( s.size()<width ) {
-            s="0"+s;
+            s.insert(s.begin(), '0');
         }
     }
     return s;
@@ -349,5 +349,5 @@ char const * exec_stream_t::error_t::what() const noexcept
 void exec_stream_t::error_t::compose( std::string const & msg, error_code_t code )
 {
     m_msg=msg;
-    m_msg+="\n[code 0x"+int2str( code, 16, 4 )+" ("+int2str( code, 10, 0 )+")]";
+    m_msg+="\n[code 0x"+int2str( code, 16, 4 )+" ("+int2str( code, 10, 1 )+")]";
 }

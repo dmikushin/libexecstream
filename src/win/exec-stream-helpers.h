@@ -60,6 +60,8 @@ public:
     void close_w();
     void close();
     void open();
+    HANDLE detach_r();
+    HANDLE detach_w();
 private:
     enum direction_t{ closed, read, write, both };
     direction_t m_direction;

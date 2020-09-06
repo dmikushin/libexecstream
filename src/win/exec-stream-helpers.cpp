@@ -118,6 +118,22 @@ void pipe_t::open()
     m_direction=both;
 }
 
+HANDLE pipe_t::detach_r()
+{
+    HANDLE r = m_r;
+    m_r=0;
+    m_direction= m_direction==both ? write : closed;
+    return r;
+}
+
+HANDLE pipe_t::detach_w()
+{
+    HANDLE w = m_w;
+    m_w=0;
+    m_direction= m_direction==both ? read : closed;
+    return w;
+}
+
 HANDLE pipe_t::r() const 
 {
     return m_r;

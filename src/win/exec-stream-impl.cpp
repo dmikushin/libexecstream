@@ -111,24 +111,45 @@ void exec_stream_t::start( std::string const & program, std::string const & argu
     }
 
     pipe_t in;
+    if( !SetHandleInformation( in.w(), HANDLE_FLAG_INHERIT, 0 ) ) {
+        throw os_error_t( "exec_stream_t::start: unable to set in handle information" );
+    }
+
+    m_impl->m_in_pipe=in.detach_w();
+
     pipe_t out;
+    if( !SetHandleInformation( out.r(), HANDLE_FLAG_INHERIT, 0 ) ) {
+        throw os_error_t( "exec_stream_t::start: unable to set out handle information" );
+    }
+
+    m_impl->m_out_pipe=out.detach_r();
+
     pipe_t err;
-    set_stdhandle_t set_in( STD_INPUT_HANDLE, in.r() );
+    if( !SetHandleInformation( err.r(), HANDLE_FLAG_INHERIT, 0 ) ) {
+        throw os_error_t( "exec_stream_t::start: unable to set err handle information" );
+    }
+
+    m_impl->m_err_pipe=err.detach_r();
+
+    /*set_stdhandle_t set_in( STD_INPUT_HANDLE, in.r() );
     set_stdhandle_t set_out( STD_OUTPUT_HANDLE, out.w() );
     set_stdhandle_t set_err( STD_ERROR_HANDLE, err.w() );
+
     HANDLE cp=GetCurrentProcess();
     if( !DuplicateHandle( cp, in.w(), cp, &m_impl->m_in_pipe, 0, FALSE, DUPLICATE_SAME_ACCESS ) ) {
         throw os_error_t( "exec_stream_t::start: unable to duplicate in handle" );
     }
     in.close_w();
+
     if( !DuplicateHandle( cp, out.r(), cp, &m_impl->m_out_pipe, 0, FALSE, DUPLICATE_SAME_ACCESS ) ) {
         throw os_error_t( "exec_stream_t::start: unable to duplicate out handle" );
     }
     out.close_r();
+
     if( !DuplicateHandle( cp, err.r(), cp, &m_impl->m_err_pipe, 0, FALSE, DUPLICATE_SAME_ACCESS ) ) {
         throw os_error_t( "exec_stream_t::start: unable to duplicate err handle" );
     }
-    err.close_r();
+    err.close_r();*/
 
     std::string command;
     command.reserve( program.size()+arguments.size()+3 );
@@ -160,9 +181,13 @@ void exec_stream_t::start( std::string const & program, std::string const & argu
     STARTUPINFOA si;
     ZeroMemory( &si, sizeof( si ) );
     si.cb=sizeof( si );
+    si.hStdInput=in.r();
+    si.hStdOutput=out.w();
+    si.hStdError=err.w();
+    si.dwFlags|=STARTF_USESTDHANDLES;
     PROCESS_INFORMATION pi;
     ZeroMemory( &pi, sizeof( pi ) );
-    if( !CreateProcessA( 0, const_cast< char * >( command.c_str() ), 0, 0, TRUE, CREATE_SUSPENDED, env, 0, &si, &pi ) ) {
+    if( !CreateProcessA( 0, const_cast< char * >( command.c_str() ), 0, 0, TRUE, CREATE_SUSPENDED | CREATE_NO_WINDOW, env, 0, &si, &pi ) ) {
         throw os_error_t( "exec_stream_t::start: CreateProcess failed.\n command line was: "+command );
     }
 
@@ -188,6 +213,7 @@ void exec_stream_t::start( std::string const & program, std::string const & argu
 
     // Resume child process
     ResumeThread(pi.hThread);
+    CloseHandle(pi.hThread);
 }
 
 void exec_stream_t::start( std::string const & program, exec_stream_t::next_arg_t & next_arg, char * envp[] )
