@@ -169,6 +169,7 @@ test_results_t::force_print_t::~force_print_t()
 
 #define TEST_NAME(n) test_results_t::add_test(n);
 #define TEST(e) ((e) || test_results_t::register_failure( #e, __FILE__, __LINE__ ))
+#define FAIL(m) (test_results_t::register_failure( m, __FILE__, __LINE__ ))
 
 std::string read_all( std::istream & i )
 {
@@ -337,7 +338,7 @@ int pathologic()
     char buf[1002];
 
     while( fgets( buf, sizeof( buf ), stdin )!=0 ) {
-        int len=strlen( buf );
+        size_t len=strlen( buf );
 
         if( len>0 && buf[len-1]=='\n' ) {
             --len;
@@ -415,7 +416,7 @@ void pathologic_one( exec_stream_t & exec_stream, bool expect_ok=true )
     int n=0;
     while( std::getline( exec_stream.out(), out_s ).good() ) {
         if( out_s!=in_s ) {
-            TEST( 0=="out_s!=in_s" );
+            FAIL( "out_s!=in_s" );
             break;
         }
         ++n;
@@ -553,7 +554,7 @@ int main( int argc, char ** argv )
             try {
                 std::string s;
                 std::getline( exec_stream.out(), s );
-                TEST( 0=="unreached" );
+                FAIL( "unreached" );
             }catch( std::exception const & e ) {
                 std::string m=e.what();
                 if( english_error_messages ) {
@@ -589,7 +590,7 @@ int main( int argc, char ** argv )
             exec_stream.start( program, "child read-after-pause" );
             try {
                 exec_stream.in()<<in_s;
-                TEST( 0=="unreachable" );
+                FAIL( "unreachable" );
             }catch( std::exception const & e ) {
                 std::string m=e.what();
                 if( english_error_messages ) {
@@ -614,7 +615,7 @@ int main( int argc, char ** argv )
             try {
                 exec_stream.in()<<random_string( 20000 );
                 exec_stream.close();
-                TEST( 0=="unreachable" );
+                FAIL( "unreachable" );
             }catch( std::exception const & e ) {
                 std::string m=e.what();
                 if( english_error_messages ) {
@@ -833,7 +834,7 @@ int main( int argc, char ** argv )
                 exec_stream.start( program, "child pathologic" );
                 try {
                     pathologic_one( exec_stream );
-                    TEST( 0=="unreachable" );
+                    FAIL( "unreachable" );
                 }catch( std::exception const & e ) {
                     std::string m=e.what();
                     if( english_error_messages ) {
@@ -926,12 +927,12 @@ int main( int argc, char ** argv )
             try {
                 exec_stream_t exec_stream;
                 exec_stream.start( prog, "" );
-                TEST( 0=="unreachable" );
+                FAIL( "unreachable" );
             }catch( exec_stream_t::error_t & e ) {
                 std::string msg=e.what();
                 TEST( msg.find( prog )!=std::string::npos );
             }catch(...) {
-                TEST( 0=="unexpected" );
+                FAIL( "unexpected" );
             }
         }
 

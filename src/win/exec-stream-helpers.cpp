@@ -313,7 +313,6 @@ thread_buffer_t::~thread_buffer_t()
         }catch(...){
         }
         if( !stopped ) {
-            DWORD code=GetLastError();
             // otherwize, the thread will be left running loose stomping on freed memory.
             std::terminate();
         }

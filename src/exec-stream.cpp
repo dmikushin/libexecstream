@@ -303,11 +303,11 @@ exec_stream_buffer_t::int_type exec_stream_buffer_t::overflow( exec_stream_buffe
     }
     if( c!=traits_type::eof() ) {
         if( pbase()==epptr() ) {
-            if( !send_char( c ) ) {
+            if( !send_char( static_cast<char>( c ) ) ) {
                 return traits_type::eof();
             }
         }else {
-            sputc( c );
+            sputc( static_cast<char>( c ) );
         }
     }
     return traits_type::not_eof( c );
