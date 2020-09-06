@@ -73,8 +73,8 @@ public:
     public:
         error_t( std::string const & msg );
         error_t( std::string const & msg,  error_code_t code );
-        ~error_t() throw();
-        virtual char const * what() const throw();
+        ~error_t() noexcept;
+        virtual char const * what() const noexcept;
     protected:
         error_t();
         void compose( std::string const & msg, error_code_t code );

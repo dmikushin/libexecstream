@@ -434,11 +434,11 @@ exec_stream_t::error_t::error_t( std::string const & msg, error_code_t code )
     compose( msg, code );
 }
 
-exec_stream_t::error_t::~error_t() throw()
+exec_stream_t::error_t::~error_t() noexcept
 {
 }
 
-char const * exec_stream_t::error_t::what() const throw()
+char const * exec_stream_t::error_t::what() const noexcept
 {
     return m_msg.c_str();
 }

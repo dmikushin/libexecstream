@@ -71,11 +71,11 @@ public:
         {
         }
 
-        ~error_t() throw()
+        ~error_t() noexcept
         {
         }
 
-        virtual char const * what() const throw()
+        virtual char const * what() const noexcept
         {
             return m_msg.c_str();
         }
