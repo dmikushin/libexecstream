@@ -200,18 +200,18 @@ bool check_if_english_error_messages()
 {
 #ifdef _WIN32
     std::string s;
-    LPVOID buf;
-    if( FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
+    LPSTR buf;
+    if( FormatMessageA( FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
         0,
         1,
         MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ),
-        (LPTSTR) &buf,
+        (LPSTR) &buf,
         0,
         0
         )==0 ) {
         return false;
     }else {
-        s=(LPTSTR)buf;
+        s=buf;
         LocalFree( buf );
         return s.find( "Incorrect function" )!=std::string::npos;
     }
