@@ -26,6 +26,10 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <exception>
+
+#include "exec-stream-helpers.h"
+
 // os_error_t
 os_error_t::os_error_t( std::string const & msg )
 {

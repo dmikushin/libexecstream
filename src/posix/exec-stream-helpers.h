@@ -26,6 +26,19 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#ifndef exec_stream_helpers_h
+#define exec_stream_helpers_h
+
+#include <pthread.h>
+
+#include <list>
+#include <cstddef>
+#include <string>
+
+#include "exec-stream-common.h"
+
+const std::size_t STREAM_BUFFER_SIZE = 4096;
+
 class os_error_t : public exec_stream_t::error_t {
 public:
     os_error_t( std::string const & msg );
@@ -134,6 +147,7 @@ private:
     friend class mutex_registrator_t;
 };
 
+
 class mutex_registrator_t {
 public:
     ~mutex_registrator_t();
@@ -237,3 +251,5 @@ private:
     std::ostream & m_in;
     bool m_in_bad;
 };
+
+#endif

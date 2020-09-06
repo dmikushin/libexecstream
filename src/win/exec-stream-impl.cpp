@@ -26,31 +26,10 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// exec_stream_t::impl_t
-struct exec_stream_t::impl_t {
-    impl_t();
+#include <string>
+#include <cstddef>
 
-    HANDLE m_child_process;
-
-    HANDLE m_in_pipe;
-    HANDLE m_out_pipe;
-    HANDLE m_err_pipe;
-
-    thread_buffer_t m_in_thread;
-    thread_buffer_t m_out_thread;
-    thread_buffer_t m_err_thread;
-
-    exec_stream_buffer_t m_in_buffer;
-    exec_stream_buffer_t m_out_buffer;
-    exec_stream_buffer_t m_err_buffer;
-
-    exec_ostream_t m_in;
-    exec_istream_t m_out;
-    exec_istream_t m_err;
-
-    DWORD m_child_timeout;
-    int m_exit_code;
-};
+#include "exec-stream-impl.h"
 
 exec_stream_t::impl_t::impl_t()
 : m_in_buffer( exec_stream_t::s_in, m_in_thread ), m_out_buffer( exec_stream_t::s_out, m_out_thread ), m_err_buffer( exec_stream_t::s_err, m_err_thread ),

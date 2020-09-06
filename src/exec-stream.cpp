@@ -28,67 +28,19 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <libexecstream/exec-stream.h>
 
-#include <list>
-#include <vector>
-#include <algorithm>
-#include <exception>
+#include <cstddef>
+#include <iosfwd>
+#include <string>
 
 #ifdef _WIN32
 
-#define NOMINMAX
-#include <windows.h>
-
-#define HELPERS_H       <libexecstream/win/exec-stream-helpers.h>
-#define HELPERS_CPP     "win/exec-stream-helpers.cpp"
-#define IMPL_CPP        "win/exec-stream-impl.cpp"
+#include "win/exec-stream-impl.h"
 
 #else
 
-#include <errno.h>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <pthread.h>
-
-#define HELPERS_H       <libexecstream/posix/exec-stream-helpers.h>
-#define HELPERS_CPP     "posix/exec-stream-helpers.cpp"
-#define IMPL_CPP        "posix/exec-stream-impl.cpp"
+#include "posix/exec-stream-impl.h"
 
 #endif
-
-// helper classes
-
-class buffer_list_t {
-public:
-    struct buffer_t {
-        std::size_t size;
-        char * data;
-    };
-
-    buffer_list_t();
-    ~buffer_list_t();
-
-    void get( char * dst, std::size_t & size );
-    void get_translate_crlf( char * dst, std::size_t & size );
-    void put( char * const src, std::size_t size );
-    void put_translate_crlf( char * const src, std::size_t size );
-    buffer_t detach();
-
-    bool empty();
-    bool full( std::size_t limit ); // limit==0 -> no limit
-
-    void clear();
-
-private:
-    typedef std::list< buffer_t > buffers_t;
-    buffers_t m_buffers;
-    std::size_t m_read_offset; // offset into the first buffer
-    std::size_t m_total_size;
-};
 
 buffer_list_t::buffer_list_t()
 {
@@ -207,35 +159,6 @@ void buffer_list_t::clear()
     m_total_size=0;
 }
 
-// platform-dependent helpers
-
-#include HELPERS_H
-#include HELPERS_CPP
-
-// stream buffer class
-class exec_stream_buffer_t : public std::streambuf {
-public:
-    exec_stream_buffer_t( exec_stream_t::stream_kind_t kind, thread_buffer_t & thread_buffer );
-    virtual ~exec_stream_buffer_t();
-
-    void clear();
-
-protected:
-    virtual int_type underflow();
-    virtual int_type overflow( int_type c );
-    virtual int sync();
-
-private:
-    bool send_buffer();
-    bool send_char( char c );
-
-    exec_stream_t::stream_kind_t m_kind;
-    thread_buffer_t & m_thread_buffer;
-    char * m_stream_buffer;
-};
-
-const std::size_t STREAM_BUFFER_SIZE=4096;
-
 exec_stream_buffer_t::exec_stream_buffer_t( exec_stream_t::stream_kind_t kind, thread_buffer_t & thread_buffer )
 : m_kind( kind ), m_thread_buffer( thread_buffer )
 {
@@ -320,27 +243,6 @@ int exec_stream_buffer_t::sync()
     }
     return 0;
 }
-
-// stream  classes
-
-class exec_istream_t : public std::istream {
-public:
-    exec_istream_t( exec_stream_buffer_t & buf )
-    : std::istream( &buf ) {
-    }
-};
-
-
-class exec_ostream_t : public std::ostream {
-public:
-    exec_ostream_t( exec_stream_buffer_t & buf )
-    : std::ostream( &buf ){
-    }
-};
-
-// platform-dependent implementation
-#include IMPL_CPP
-
 
 //platform-independent exec_stream_t member functions
 exec_stream_t::exec_stream_t()

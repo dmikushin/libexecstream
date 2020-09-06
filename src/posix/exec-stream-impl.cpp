@@ -26,38 +26,19 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// exec_stream_t::impl_t
-struct exec_stream_t::impl_t {
-    impl_t();
-    ~impl_t();
-    
-    void split_args( std::string const & program, std::string const & arguments );
-    void split_args( std::string const & program, exec_stream_t::next_arg_t & next_arg );
-    void start( std::string const & program, char * envp[] );
-    
-    pid_t m_child_pid;
-    int m_exit_code;
-    unsigned long m_child_timeout;
+#include <errno.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
-    buf_t< char > m_child_args;
-    buf_t< char * > m_child_argp;
-    
-    pipe_t m_in_pipe;
-    pipe_t m_out_pipe;
-    pipe_t m_err_pipe;
+#include <vector>
+#include <cstddef>
+#include <cstring>
 
-    thread_buffer_t m_thread;
-    
-    exec_stream_buffer_t m_in_buffer;
-    exec_stream_buffer_t m_out_buffer;
-    exec_stream_buffer_t m_err_buffer;
-
-    exec_ostream_t m_in;
-    exec_istream_t m_out;
-    exec_istream_t m_err;
-
-    void (*m_old_sigpipe_handler)(int);
-};
+#include "exec-stream-impl.h"
 
 exec_stream_t::impl_t::impl_t()
 : m_thread( m_in_pipe, m_out_pipe, m_err_pipe, m_in ), /* m_in here is not initialized, but its ok */

@@ -26,6 +26,17 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <errno.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/time.h>
+#include <sys/types.h>
+
+#include <algorithm>
+#include <cstring>
+
+#include "exec-stream-helpers.h"
+
 // os_error_t
 os_error_t::os_error_t( std::string const & msg )
 {
