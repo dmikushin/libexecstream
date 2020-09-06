@@ -32,7 +32,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iosfwd>
 #include <string>
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__MSYS__)
 
 #include "win/exec-stream-impl.h"
 

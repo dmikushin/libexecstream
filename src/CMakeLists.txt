@@ -27,6 +27,6 @@ add_library(execstream ${libtype}
 target_include_directories(execstream PUBLIC ../include ./)
 target_link_libraries(execstream PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 
-if(NOT MSVC)
+if(NOT MSVC AND NOT CMAKE_COMPILER_IS_MSYS)
     target_compile_options(execstream PRIVATE -fPIC)
 endif()

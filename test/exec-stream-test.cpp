@@ -41,7 +41,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <climits>
 #include <cstdio>
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__MSYS__)
 
 #include <windows.h>
 
@@ -199,7 +199,7 @@ std::string random_string( std::size_t size )
 
 bool check_if_english_error_messages()
 {
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__MSYS__)
     std::string s;
     LPSTR buf;
     if( FormatMessageA( FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
@@ -482,7 +482,7 @@ int main( int argc, char ** argv )
             exec_stream_t exec_stream;
             exec_stream.set_binary_mode( exec_stream_t::s_out );
             exec_stream.start( program, "child helloworld" );
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__MSYS__)
             TEST( read_all( exec_stream.out() )=="hello\r\nworld" );
 #else
             TEST( read_all( exec_stream.out() )=="hello\nworld" );
