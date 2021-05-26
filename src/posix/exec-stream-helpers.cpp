@@ -465,6 +465,7 @@ void thread_buffer_t::get( exec_stream_t::stream_kind_t kind, char * dst, std::s
     int eof_kind= kind==exec_stream_t::s_out ? s_out_eof : s_err_eof;
     buffer_list_t & buffer= kind==exec_stream_t::s_out ? m_out_buffer : m_err_buffer;
 
+    // TODO Why we fail here on MacOS?
     wait_result_t wait_result=m_thread_responce.wait( kind|exec_stream_t::s_child|eof_kind, timeout, 0 );
     if( !wait_result.ok() ) {
         throw os_error_t( "thread_buffer_t::get: wait for got_data failed", wait_result.error_code() );
