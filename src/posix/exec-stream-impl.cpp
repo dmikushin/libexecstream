@@ -199,9 +199,9 @@ void exec_stream_t::impl_t::start( std::string const & program, char * envp[] )
     
     pipe_t status_pipe;
     status_pipe.open();
-    
+#ifndef __APPLE__
     if( envp == NULL) envp = environ;
-    
+#endif    
     pid_t pid=fork();
     if( pid==-1 ) {
         throw os_error_t( "exec_stream_t::start: fork failed" );
@@ -235,7 +235,10 @@ void exec_stream_t::impl_t::start( std::string const & program, char * envp[] )
             m_in_pipe.close_r();
             m_out_pipe.close_w();
             m_err_pipe.close_w();
-            if( execvpe( m_child_args.data(), m_child_argp.data(), envp )==-1 ) {
+#ifdef __APPLE__
+#define execvpe(program, args, env) execvp(program, args)
+#endif
+	    if( execvpe( m_child_args.data(), m_child_argp.data(), envp )==-1 ) {
                 throw os_error_t( "exec_stream_t::start: exec in child process failed. "+program );
             }
             throw exec_stream_t::error_t( "exec_stream_t::start: exec in child process returned" );
