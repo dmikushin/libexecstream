@@ -26,7 +26,7 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <libexecstream/exec-stream.h>
+#include <execstream/execstream.h>
 
 #include <list>
 #include <vector>
@@ -38,9 +38,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NOMINMAX
 #include <windows.h>
 
-#define HELPERS_H       <libexecstream/win/exec-stream-helpers.h>
-#define HELPERS_CPP     "win/exec-stream-helpers.cpp"
-#define IMPL_CPP        "win/exec-stream-impl.cpp"
+#define HELPERS_H       <execstream/win/execstream_helpers.h>
+#define HELPERS_CPP     "win/execstream_helpers.cpp"
+#define IMPL_CPP        "win/execstream_impl.cpp"
 
 #else
 
@@ -54,9 +54,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/wait.h>
 #include <pthread.h>
 
-#define HELPERS_H       <libexecstream/posix/exec-stream-helpers.h>
-#define HELPERS_CPP     "posix/exec-stream-helpers.cpp"
-#define IMPL_CPP        "posix/exec-stream-impl.cpp"
+#define HELPERS_H       <execstream/posix/execstream_helpers.h>
+#define HELPERS_CPP     "posix/execstream_helpers.cpp"
+#define IMPL_CPP        "posix/execstream_impl.cpp"
 
 #endif
 

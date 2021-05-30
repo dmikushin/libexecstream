@@ -26,7 +26,7 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <libexecstream/exec-stream.h>
+#include <execstream/execstream.h>
 
 #include <vector>
 #include <list>
@@ -453,7 +453,7 @@ int main( int argc, char ** argv )
     // do not test for specific error message text if it is not in english
     bool english_error_messages=check_if_english_error_messages();
 
-    std::string program="./exec-stream-test";
+    std::string program="./execstream_test";
     int n_failed=42;
 
     // the tests begin here
